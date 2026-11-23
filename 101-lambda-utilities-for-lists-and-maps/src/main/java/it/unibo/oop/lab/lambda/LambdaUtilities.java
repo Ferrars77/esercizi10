@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -68,7 +69,9 @@ public final class LambdaUtilities {
         /*
          * Suggestion: consider Optional.filter
          */
-        return emptyList();
+        final List<Optional<T>> optList = new ArrayList<>(list.size());
+        list.forEach(op -> optList.add(Optional.ofNullable(op).filter(pre)));
+        return optList;
     }
 
     /**
@@ -83,13 +86,20 @@ public final class LambdaUtilities {
      * @param <R>
      *            key type
      * @return a map that groups into categories each element of the input list,
-     *         based on the mapping done by the function
+     *        based on the mapping done by the function
      */
     public static <R, T> Map<R, Set<T>> group(final List<T> list, final Function<T, R> op) {
         /*
          * Suggestion: consider Map.merge
          */
-        return emptyMap();
+        final Map<R, Set<T>> map = new HashMap<>();
+        list.forEach(t -> {
+           map.merge(op.apply(t), new HashSet<>(Set.of(t)), (oldSet, newSet) -> {
+                oldSet.addAll(newSet);
+                return oldSet;
+           });
+        });
+        return map;
     }
 
     /**
@@ -112,7 +122,9 @@ public final class LambdaUtilities {
          *
          * Keep in mind that a map can be iterated through its forEach method
          */
-        return emptyMap();
+        final Map<K, V> newMap = new HashMap<>();
+        map.forEach((k, v) ->  newMap.put(k, v.orElse(def.get())));
+        return newMap;
     }
 
     /**
