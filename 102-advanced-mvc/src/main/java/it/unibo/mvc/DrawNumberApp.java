@@ -6,6 +6,12 @@ import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Application entry point for DrawNumber game.
  */
@@ -16,6 +22,43 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
 
     private final DrawNumber model;
     private final List<DrawNumberView> views;
+
+    private final static String aFile = "src/main/resources/config.yml";
+    public static final String SEP = File.separator ;
+    public static final String FILE_NAME = "src" + SEP + "main" + SEP + "resources" + SEP + "config.yml";
+
+
+   
+
+
+   private int[] extractDatas(final String fileName) {
+        final int[] datas = new int[3];
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                final String[] parts = line.split(";");
+                for (final String part : parts) {
+                    final String[] keyValue = part.split(":");
+                    if (keyValue.length == 2) {
+                        final String key = keyValue[0].trim();
+                        final int value = Integer.parseInt(keyValue[1].trim());
+                        if ("minimum".equals(key)) {
+                            datas[0] = value;
+                        } else if ("maximum".equals(key)) {
+                            datas[1] = value;
+                        } else if ("attempts".equals(key)) {
+                            datas[2] = value;
+                        }
+                    }
+                }
+            }
+        } catch (final IOException e) {
+            
+        }
+        return datas;
+    }
+
+   
 
     /**
      * Constructor.
@@ -32,7 +75,8 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
             view.setObserver(this);
             view.start();
         }
-        this.model = new DrawNumberImpl(MIN, MAX, ATTEMPTS);
+        int[] datas = extractDatas(FILE_NAME);  
+        this.model = new DrawNumberImpl(datas[0], datas[1], datas[2]);
     }
 
     @Override
@@ -76,6 +120,9 @@ public final class DrawNumberApp implements DrawNumberViewObserver {
      */
     public static void main() throws FileNotFoundException {
         new DrawNumberApp(new DrawNumberViewImpl());
+        new DrawNumberApp(new DrawNumberViewImpl());
+        new DrawNumberApp(new PrintStream());
+
     }
 
 }
